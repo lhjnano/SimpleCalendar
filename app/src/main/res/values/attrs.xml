@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <attr name="backgroundEvent" format="color"/>
+    <attr name="textColor" format="color"/>
+    <attr name="textEventColor" format="color"/>
+    <attr name="textHolidayColor" format="color"/>
+    <attr name="dividerColor" format="color"/>
+    <attr name="startDayOfWeek" >
+        <flag name="standard" value="0x00000000"/>
+        <flag name="sunday"   value="0x00000001"/>
+        <flag name="saturday" value="0x00000002"/>
+    </attr>
+
+    <declare-styleable name="SimpleCalendar">
+        <attr name="backgroundEvent"/>
+        <attr name="textColor"/>
+        <attr name="textEventColor"/>
+        <attr name="textHolidayColor"/>
+        <attr name="dividerColor"/>
+        <attr name="startDayOfWeek"/>
+        <attr name="android:fontFamily"/>
+    </declare-styleable>
+
+</resources>
