@@ -3,6 +3,7 @@ package com.whiteduck.simplecalendar;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -63,6 +64,16 @@ public class MainActivity extends AppCompatActivity {
             // TODO write what do you do
         });
 
+        binding.simpleCalendar.setOnSwipeMonthListener(time ->
+                // TODO When changed the page, write for what to do
+                Toast.makeText(MainActivity.this, "swipe on : " + WeekFormat.getDateStringBestFmt(new Date(time), "MM"), Toast.LENGTH_SHORT).show()
+        );
+
+
+        // If you wanna change the starting month, following the next code.
         setContentView(binding.getRoot());
+        c.setTimeInMillis(today);
+        c.set(Calendar.MONTH, 3); // Maple
+        binding.simpleCalendar.setDate(c.getTimeInMillis());
     }
 }

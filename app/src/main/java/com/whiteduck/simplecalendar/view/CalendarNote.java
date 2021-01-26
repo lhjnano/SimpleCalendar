@@ -1,35 +1,19 @@
 package com.whiteduck.simplecalendar.view;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.res.Resources;
-import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.Typeface;
-import android.graphics.fonts.Font;
-import android.graphics.fonts.FontFamily;
-import android.graphics.fonts.SystemFonts;
-import android.os.Build;
-import android.provider.FontsContract;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
-import androidx.annotation.ColorInt;
-import androidx.annotation.ColorRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.res.FontResourcesParserCompat;
-import androidx.core.content.res.ResourcesCompat;
-import androidx.core.graphics.TypefaceCompat;
 
-import com.whiteduck.simplecalendar.R;
 import com.whiteduck.simplecalendar.SimpleCalendar;
 import com.whiteduck.simplecalendar.data.DayEvent;
 import com.whiteduck.simplecalendar.data.StylePackage;
@@ -106,7 +90,7 @@ public class CalendarNote extends View implements View.OnTouchListener{
         return this;
     }
 
-    public CalendarNote setStartDayOfWeek() {
+    public void setStartDayOfWeek() {
         Calendar calendar = Calendar.getInstance();
         calendar.set(2019, 9, 6 - sp.startDayOfWeek, 0, 0, 0); // Sunday
         try {
@@ -129,7 +113,6 @@ public class CalendarNote extends View implements View.OnTouchListener{
 
         }
         setCalendar(new Date().getTime()); // default
-        return this;
     }
 
 
@@ -246,7 +229,6 @@ public class CalendarNote extends View implements View.OnTouchListener{
     {
         Calendar c = Calendar.getInstance();
         c.setTimeInMillis(calendarStartTime);
-        int WEEKEND =  MAX_BLOCK_X;
         CalendarColors colors = sp.colors;
 
         List<Long> holidayList = null;
@@ -276,7 +258,7 @@ public class CalendarNote extends View implements View.OnTouchListener{
                 }
                 else
                 {
-                    if( x == WEEKEND - 1 ) // Sunday
+                    if( x == MAX_BLOCK_X - 1 ) // Sunday
                         paint.setColor(isShowingMonth ? colors.textHoliday : colors.textHoliday & colors.overflow);
                 }
 

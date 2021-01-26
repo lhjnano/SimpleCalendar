@@ -3,9 +3,8 @@ package com.whiteduck.simplecalendar;
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
-import android.graphics.Color;
-import android.graphics.Typeface;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.widget.FrameLayout;
 
@@ -14,17 +13,19 @@ import androidx.annotation.ColorRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.res.ResourcesCompat;
-import androidx.core.content.res.TypedArrayUtils;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.whiteduck.simplecalendar.data.DayEvent;
 import com.whiteduck.simplecalendar.data.StylePackage;
 import com.whiteduck.simplecalendar.databinding.CalendarSimpleBinding;
-import com.whiteduck.simplecalendar.util.CalendarColors;
+import com.whiteduck.simplecalendar.util.WeekFormat;
 
+import java.util.Calendar;
 import java.util.List;
 
 public class SimpleCalendar extends FrameLayout{
 
+    private CalendarSimpleBinding binding = null;
     private SimpleCalendarAdapter adapter = null;
     public static final int MAX_PAGES = Integer.MAX_VALUE;
 
@@ -76,26 +77,89 @@ public class SimpleCalendar extends FrameLayout{
 
         typedArray.recycle();
 
-
-        CalendarSimpleBinding binding = CalendarSimpleBinding.inflate(LayoutInflater.from(context), null, false);
+        MONTH_OF_FIRST_PAGE = System.currentTimeMillis();
+        binding = CalendarSimpleBinding.inflate(LayoutInflater.from(context), this, false);
         adapter = new SimpleCalendarAdapter()
                 .setStylePackage(stylePackage)
-                .setTime(System.currentTimeMillis());
+                .setTime(MONTH_OF_FIRST_PAGE);
         binding.viewPager.setAdapter(adapter);
         binding.viewPager.setOffscreenPageLimit(3);
         binding.viewPager.setCurrentItem(MAX_PAGES / 2, false);
         addView(binding.getRoot());
+    }
 
+    /**
+     * Show the first calender on @param date
+     */
+    public void setDate(long date)
+    {
+        MONTH_OF_FIRST_PAGE = date;
+        if( adapter != null )
+            adapter.setTime(MONTH_OF_FIRST_PAGE);
+        if( binding != null )
+            binding.viewPager.setCurrentItem(MAX_PAGES / 2, false);
+        if( onSwipeMonthListener == null ) return;
+        onSwipeMonthListener.onChanged(date);
+    }
+
+    long MONTH_OF_FIRST_PAGE = 0;
+    private ViewPager2.OnPageChangeCallback pageChangeCallback = new ViewPager2.OnPageChangeCallback() {
+        @Override
+        public void onPageSelected(int position) {
+            super.onPageSelected(position);
+            if( onSwipeMonthListener == null ) return;
+            Calendar c = Calendar.getInstance();
+            c.setTimeInMillis(MONTH_OF_FIRST_PAGE);
+            onSwipeMonthListener.onChanged(
+                    WeekFormat.addMonth(c, (position - (MAX_PAGES/2) ))
+            );
+        }
+    };
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        if( binding == null ) return;
+        binding.viewPager.registerOnPageChangeCallback(pageChangeCallback);
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        if( binding == null ) return;
+        binding.viewPager.unregisterOnPageChangeCallback(pageChangeCallback);
     }
 
     public interface OnEventListener {
+        /**
+         * This function wanna event for showing calendar.
+         * Must to ready 3 months the List of DayEvent for Implemented Calendar to ViewPager2
+         */
         List<DayEvent> onEvent(long startTimeStamp, long endTimeStamp);
     }
     public interface OnHolidayListener {
+        /**
+         * If you wanna check on holiday, use this function.
+         * return @return list is the days on @param month.
+         */
         List<Long> onHoliday(int year, int month);
     }
     public interface OnDayClickListener {
+        /**
+         * User can click the day, Cuz to do something for this day.
+         * So @param time is the clicked day, you can use this function.
+         */
         void onClick(long time);
+    }
+    public interface OnSwipeMonthListener {
+        /**
+         * Swipe ViewPager2, You wanna know what calendar show.
+         */
+        void onChanged(long time);
+    }
+    private OnSwipeMonthListener onSwipeMonthListener = null;
+    public void setOnSwipeMonthListener(OnSwipeMonthListener onSwipeMonthListener) {
+        this.onSwipeMonthListener = onSwipeMonthListener;
     }
 
     public void setOnEventListener(OnEventListener onEventListener) {

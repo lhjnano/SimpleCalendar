@@ -21,4 +21,12 @@ public class WeekFormat {
         return c.getTime();
     }
 
+    public static long addMonth(Calendar c, int amount)
+    {
+        c.add(Calendar.MONTH, amount);
+        return c.getTimeInMillis();
+    }
+
+
+
 }
