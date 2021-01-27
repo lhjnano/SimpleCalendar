@@ -81,12 +81,12 @@ public class CalendarNote extends View implements View.OnTouchListener{
         this.sp = sp;
         setStartDayOfWeek();
 
-        if( sp.font.length() > 0 )
-        {
-            Typeface typeface = Typeface.create(sp.font, Typeface.NORMAL);
-            if( typeface != null )
-                paint.setTypeface(typeface);
-        }
+        if( sp.font == null ) return this;
+        if( sp.font.length() <= 0 ) return this;
+        Typeface typeface = Typeface.create(sp.font, Typeface.NORMAL);
+
+        if( typeface == null ) return this;
+        paint.setTypeface(typeface);
         return this;
     }
 
