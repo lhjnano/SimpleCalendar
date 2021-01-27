@@ -8,6 +8,7 @@ import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -32,12 +33,11 @@ public class CalendarNote extends View implements View.OnTouchListener{
     private static final int MAX_BLOCK_X = 7;
     private static final int MAX_BLOCK_Y = 6;
 
-
-    private float blockWidth = 0f;
+    private float blockWidth  = 0f;
     private float blockHeight = 0f;
-    private float dividerSize = 4;
-    private float weekStringHeight = 64;
-    private float eventBoxHeight = 0f;
+    private static final float dividerSize      = 4f;
+    private static final float weekStringHeight = 64f;
+    private static final float eventBoxHeight   = 48f;
 
     public static final long DAY =  24 * 60 * 60 * 1000;
     public static final long WEEK = 7 * DAY;
@@ -161,7 +161,6 @@ public class CalendarNote extends View implements View.OnTouchListener{
     {
         blockWidth     = (float)getWidth() / MAX_BLOCK_X;
         blockHeight    = (getHeight() - weekStringHeight) / MAX_BLOCK_Y;
-        eventBoxHeight = ( blockHeight - dividerSize ) / 5;
 
         textSizes.topWeeklyText = dpToPx(getContext(), 13);
         textSizes.textNormal    = dpToPx(getContext(), 13);
@@ -318,11 +317,16 @@ public class CalendarNote extends View implements View.OnTouchListener{
     private void drawEvent(Canvas canvas, DayEvent event, PointF start, PointF end, Map<Integer, Integer> eventCntMap)
     {
         long startTime = event.getStartTime();
+        final int START_INDEX = (int) (start.x + start.y * MAX_BLOCK_X );
+        final int END_INDEX = (int) (end.x + end.y * MAX_BLOCK_X + 1);
 
-        while( true )
+        int eventCnt = 1;
+        for(int i = START_INDEX; i < END_INDEX; i++, startTime+= DAY)
         {
             // Get Event count for the time of point
-            int eventCnt = 1;
+            start.x = i % MAX_BLOCK_X;
+            start.y = (int)(i / MAX_BLOCK_X);
+
             int mapDay = (int) ((calendarStartTime - startTime) / DAY);
             if( eventCntMap.get(mapDay) == null )
                 eventCntMap.put(mapDay, eventCnt);
@@ -332,18 +336,14 @@ public class CalendarNote extends View implements View.OnTouchListener{
                 eventCnt++;
                 eventCntMap.put(mapDay, eventCnt);
             }
+
             // Draw
             drawEventDbD(canvas, startTime, event, start, eventCnt);
-
-            // Check the point is end.
-            if( start.x == end.x && start.y == end.y ) break;
-
-            // Move Point
-            start.x ++;
-            start.y += start.x == MAX_BLOCK_X ? 1 : 0;
-            start.x += start.x == MAX_BLOCK_X ? -MAX_BLOCK_X : 0;
-            startTime+= DAY;
         }
+
+        start.x = START_INDEX % MAX_BLOCK_X;
+        start.y = (int)(START_INDEX / MAX_BLOCK_X);
+        drawEventTitle(canvas, event.getStartTime(), event, start, eventCnt);
     }
 
     /**
@@ -387,6 +387,20 @@ public class CalendarNote extends View implements View.OnTouchListener{
                 eventY + eventBoxHeight,
                 paint
         );
+    }
+
+
+    /**
+     * Draw Event Day by Day
+     */
+    private void drawEventTitle(Canvas canvas, long paintingDay, DayEvent event, PointF ep, int evtCnt)
+    {
+        final float boxY              = ep.y * blockHeight + weekStringHeight;
+        final float stackEventHeight  = (evtCnt - 1) * eventBoxHeight;
+        final float stackEventDivider = (evtCnt - 1) * dividerSize;
+        final float dayTextBottomY    = boxY + textSizes.textNormal + textSizes.textPadding * 2;
+        final float eventY            = dayTextBottomY + stackEventHeight + stackEventDivider;
+        final float boxX              = ep.x * blockWidth; // from 0 to left of box
 
         // title set once.
         if( !(ep.x == 0 && ep.y == 0) && event.isBackLink(paintingDay))  return;
@@ -400,6 +414,7 @@ public class CalendarNote extends View implements View.OnTouchListener{
         Rect bounds = new Rect();
         paint.getTextBounds(eventTitle, 0, eventTitle.length(), bounds);
         int eventBoxWidth = (int) (blockWidth - dividerSize * 2 - textSizes.textPadding) - 10;
+        eventBoxWidth = eventBoxWidth * (event.isNextLink(paintingDay) && ep.x != MAX_BLOCK_X - 1 ? 2 : 1 ); // title max width size  is box * 2
 
         if( bounds.width() > eventBoxWidth )
         {

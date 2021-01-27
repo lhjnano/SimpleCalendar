@@ -72,8 +72,8 @@ public class MainActivity extends AppCompatActivity {
 
         // If you wanna change the starting month, following the next code.
         setContentView(binding.getRoot());
-        c.setTimeInMillis(today);
-        c.set(Calendar.MONTH, 3); // Maple
-        binding.simpleCalendar.setDate(c.getTimeInMillis());
+        //c.setTimeInMillis(today);
+        //c.set(Calendar.MONTH, 3); // Maple
+        //binding.simpleCalendar.setDate(c.getTimeInMillis());
     }
 }
